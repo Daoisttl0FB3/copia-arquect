@@ -97,7 +97,15 @@ def test_token_inexistente_devuelve_404(cliente):
 
 
 def test_metricas_aumentan_al_consultar_invitacion(cliente):
-    respuesta_inicial = cliente.get("/metrics")
+
+    headers = {
+        "Authorization": "Bearer token-local-para-pruebas-2026"
+    }
+
+    respuesta_inicial = cliente.get(
+        "/metrics",
+        headers=headers
+    )
 
     assert respuesta_inicial.status_code == 200
 
@@ -117,7 +125,10 @@ def test_metricas_aumentan_al_consultar_invitacion(cliente):
 
     assert respuesta.status_code == 200
 
-    respuesta_final = cliente.get("/metrics")
+    respuesta_final = cliente.get(
+        "/metrics",
+        headers=headers
+    )
 
     assert respuesta_final.status_code == 200
 

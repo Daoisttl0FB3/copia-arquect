@@ -1,4 +1,5 @@
 import os
+import secrets
 import sys
 from datetime import datetime
 
@@ -53,8 +54,10 @@ def registrar_peticion():
 
     http_requests_total += 1
 
-    http_requests_by_path[request.path] = (
-        http_requests_by_path.get(request.path, 0) + 1
+    # Usar la plantilla de Flask evita registrar tokens secretos.
+    ruta = request.url_rule.rule if request.url_rule is not None else "<sin-ruta>"
+    http_requests_by_path[ruta] = (
+        http_requests_by_path.get(ruta, 0) + 1
     )
 
 
@@ -86,7 +89,17 @@ def health():
 
 @app.get("/metrics")
 def metrics():
-    """Expone métricas de consultas de invitaciones y HTTP."""
+    """Expone métricas solo con un token de observabilidad configurado."""
+    token_esperado = os.environ.get("ENAGENDA_METRICS_TOKEN", "")
+    if not token_esperado:
+        return jsonify({"error": "Métricas no configuradas"}), 503
+
+    autorizacion = request.headers.get("Authorization", "")
+    esquema, separador, token_recibido = autorizacion.partition(" ")
+    if (not separador or esquema.lower() != "bearer"
+            or not secrets.compare_digest(token_recibido, token_esperado)):
+        return jsonify({"error": "No autorizado"}), 401
+
     return jsonify(
         {
             "metric": "enagenda_invitaciones_consultadas_total",
