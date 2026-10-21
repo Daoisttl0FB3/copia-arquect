@@ -2,8 +2,7 @@ import os
 import secrets
 import sys
 from datetime import datetime
-from flask_wtf.csrf import CSRFProtect
-
+from functools import wraps
 
 from flask import (
     Flask,
@@ -15,7 +14,7 @@ from flask import (
     session,
     url_for,
 )
-
+from flask_wtf.csrf import CSRFProtect
 
 # Permite importar el paquete src cuando ejecutamos:
 # python app\web.py
@@ -32,12 +31,14 @@ from src.invitaciones.infraestructura.repositorio_memoria import (
     RepositorioInvitacionesMemoria,
 )
 
+from src.usuarios.aplicacion.registrar_usuario import registrar_usuario
+from src.usuarios.aplicacion.autenticar_usuario import autenticar_usuario
+
 
 app = Flask(__name__)
 
-# Configuración de sesiones de usuario
+# SECRET_KEY se configura en .env, nunca se publica en Git.
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
-
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = (
@@ -90,6 +91,74 @@ def registrar_respuesta(response):
 
     return response
 
+
+
+
+def login_requerido(funcion):
+    @wraps(funcion)
+    def decorador(*args, **kwargs):
+        if "usuario_id" not in session:
+            return redirect(url_for("login"))
+        return funcion(*args, **kwargs)
+    return decorador
+
+
+@app.route("/registro", methods=["GET", "POST"])
+def registro():
+    if "usuario_id" in session:
+        return redirect(url_for("panel"))
+
+    mensaje_error = None
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "")
+        correo = request.form.get("correo", "")
+        contrasena = request.form.get("contrasena", "")
+        confirmar = request.form.get("confirmar_contrasena", "")
+
+        if contrasena != confirmar:
+            mensaje_error = "Las contraseñas no coinciden."
+        else:
+            try:
+                registrar_usuario(nombre, correo, contrasena)
+                return redirect(url_for("login"))
+            except ValueError as error:
+                mensaje_error = str(error)
+
+    return render_template("registro.html", mensaje_error=mensaje_error)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if "usuario_id" in session:
+        return redirect(url_for("panel"))
+
+    mensaje_error = None
+    if request.method == "POST":
+        correo = request.form.get("correo", "")
+        contrasena = request.form.get("contrasena", "")
+        usuario = autenticar_usuario(correo, contrasena)
+
+        if usuario is None:
+            mensaje_error = "Correo o contraseña incorrectos."
+        else:
+            session.clear()
+            session["usuario_id"] = usuario["id"]
+            return redirect(url_for("panel"))
+
+    return render_template("login.html", mensaje_error=mensaje_error)
+
+
+@app.get("/panel")
+@login_requerido
+def panel():
+    return render_template("panel.html")
+
+
+@app.post("/logout")
+@login_requerido
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 @app.get("/health")
 def health():
@@ -478,6 +547,7 @@ def api_consultar_invitacion(token):
     "/api/v1/invitaciones/<token>",
     methods=["POST"],
 )
+@csrf.exempt
 def api_responder_invitacion(token):
     """Registra la respuesta del invitado y devuelve la invitación."""
     datos = request.get_json(silent=True)

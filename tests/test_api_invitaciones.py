@@ -1,5 +1,7 @@
 import re
 
+from html.parser import HTMLParser
+
 import pytest
 
 import app.web as web
@@ -13,11 +15,38 @@ def cliente():
     return app.test_client()
 
 
+class ExtractorCSRF(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.token = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag != "input":
+            return
+
+        atributos = dict(attrs)
+
+        if atributos.get("name") == "csrf_token":
+            self.token = atributos.get("value")
+
+
+
 def obtener_token(cliente):
     """Crea una invitación de prueba y devuelve su token."""
+
+    # Obtener CSRF desde el formulario principal
+    pagina = cliente.get("/")
+    assert pagina.status_code == 200
+
+    extractor = ExtractorCSRF()
+    extractor.feed(pagina.get_data(as_text=True))
+
+    assert extractor.token is not None
+
     respuesta = cliente.post(
         "/crear-invitaciones",
         data={
+            "csrf_token": extractor.token,
             "fecha_limite": "2099-12-31",
             "hora": "11",
             "minuto": "30",
@@ -40,6 +69,7 @@ def obtener_token(cliente):
     assert coincidencia is not None
 
     return coincidencia.group(1)
+
 
 
 def test_get_invitacion_devuelve_datos_del_contrato(cliente):

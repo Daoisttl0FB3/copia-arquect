@@ -4,5 +4,5 @@ schemathesis==4.28.0
 gunicorn==23.0.0
 SQLAlchemy>=2.0,<3.0
 psycopg[binary]>=3.2,<4.0
-alembic>=1.14,<2.
+alembic>=1.14,<2.0
 Flask-WTF>=1.2,<2.0

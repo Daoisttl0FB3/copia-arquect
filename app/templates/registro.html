@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear cuenta | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/autenticacion.css') }}">
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card">
+            <header class="brand">
+                <div class="logo">E</div>
+                <h1>EnAgenda</h1>
+                <p>Organiza. Invita. Celebra.</p>
+            </header>
+
+            <h2>Crear una cuenta</h2>
+            <p class="description">
+                Comienza a organizar tus eventos de manera sencilla.
+            </p>
+
+            {% if mensaje_error %}
+                <div class="error">{{ mensaje_error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('registro') }}">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <div class="field">
+                    <label for="nombre">Nombre completo</label>
+                    <input id="nombre" name="nombre" type="text"
+                           maxlength="150" autocomplete="name" required>
+                </div>
+
+                <div class="field">
+                    <label for="correo">Correo electrónico</label>
+                    <input id="correo" name="correo" type="email"
+                           maxlength="255" autocomplete="email" required>
+                </div>
+
+                <div class="field">
+                    <label for="contrasena">Contraseña</label>
+                    <input id="contrasena" name="contrasena"
+                           type="password" minlength="8" maxlength="128"
+                           autocomplete="new-password" required>
+                </div>
+
+                <div class="field">
+                    <label for="confirmar_contrasena">
+                        Confirmar contraseña
+                    </label>
+                    <input id="confirmar_contrasena"
+                           name="confirmar_contrasena" type="password"
+                           minlength="8" maxlength="128"
+                           autocomplete="new-password" required>
+                </div>
+
+                <button type="submit">Crear cuenta</button>
+            </form>
+
+            <p class="auth-link">
+                ¿Ya tienes una cuenta?
+                <a href="{{ url_for('login') }}">Inicia sesión</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>

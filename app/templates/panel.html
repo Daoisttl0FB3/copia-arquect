@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi panel | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/autenticacion.css') }}">
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card">
+            <header class="brand">
+                <div class="logo">E</div>
+                <h1>EnAgenda</h1>
+                <p>Organiza. Invita. Celebra.</p>
+            </header>
+
+            <h2>¡Bienvenido a EnAgenda!</h2>
+            <p class="description">
+                Has iniciado sesión correctamente.
+                Próximamente podrás administrar tus eventos.
+            </p>
+
+            <form method="POST" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/autenticacion.css') }}">
+</head>
+<body>
+    <main class="auth-page">
+        <section class="auth-card">
+            <header class="brand">
+                <div class="logo">E</div>
+                <h1>EnAgenda</h1>
+                <p>Organiza. Invita. Celebra.</p>
+            </header>
+
+            <h2>¡Bienvenido de nuevo!</h2>
+            <p class="description">
+                Inicia sesión para administrar tus eventos.
+            </p>
+
+            {% if mensaje_error %}
+                <div class="error">{{ mensaje_error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <div class="field">
+                    <label for="correo">Correo electrónico</label>
+                    <input id="correo" name="correo" type="email"
+                           autocomplete="username" required>
+                </div>
+
+                <div class="field">
+                    <label for="contrasena">Contraseña</label>
+                    <input id="contrasena" name="contrasena"
+                           type="password" autocomplete="current-password"
+                           required>
+                </div>
+
+                <button type="submit">Iniciar sesión</button>
+            </form>
+
+            <p class="auth-link">
+                ¿Todavía no tienes cuenta?
+                <a href="{{ url_for('registro') }}">Regístrate</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>
