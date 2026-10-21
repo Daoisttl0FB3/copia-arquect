@@ -2,15 +2,20 @@ import os
 import secrets
 import sys
 from datetime import datetime
+from flask_wtf.csrf import CSRFProtect
+
 
 from flask import (
     Flask,
     jsonify,
+    redirect,
     render_template,
     request,
     send_file,
+    session,
     url_for,
 )
+
 
 # Permite importar el paquete src cuando ejecutamos:
 # python app\web.py
@@ -29,6 +34,16 @@ from src.invitaciones.infraestructura.repositorio_memoria import (
 
 
 app = Flask(__name__)
+
+# Configuración de sesiones de usuario
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = (
+    os.environ.get("FLASK_SECURE_COOKIES", "false").lower() == "true"
+)
+csrf = CSRFProtect(app)
 
 # Repositorio en memoria para la interfaz.
 repositorio = RepositorioInvitacionesMemoria()

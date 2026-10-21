@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -45,7 +46,7 @@
                 <div class="information">
 
                     <div class="information-item">
-                        <span>Estado</span>
+                        <span>Estado actual</span>
 
                         <strong class="status">
                             {{ invitacion.estado.value }}
@@ -70,22 +71,39 @@
 
                 <form method="post" class="actions">
 
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
+
+                    <p>¿Asistirás al evento?</p>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="estado"
+                            value="confirmado"
+                            required
+                        >
+                        Sí, asistiré
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="estado"
+                            value="no_asistire"
+                            required
+                        >
+                        No podré asistir
+                    </label>
+
                     <button
                         class="button button-confirm"
                         type="submit"
-                        name="estado"
-                        value="confirmado"
                     >
-                        ✓ Confirmar asistencia
-                    </button>
-
-                    <button
-                        class="button button-decline"
-                        type="submit"
-                        name="estado"
-                        value="no_asistire"
-                    >
-                        No asistiré
+                        Enviar respuesta
                     </button>
 
                 </form>

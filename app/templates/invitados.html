@@ -29,8 +29,7 @@
                 action="{{ url_for('crear_invitaciones') }}"
                 method="POST"
             >
-
-                <!-- Datos generales provenientes de la pantalla anterior -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <input
                     type="hidden"
