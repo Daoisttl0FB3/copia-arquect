@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 
 from src.compartido.infraestructura.base_datos import DATABASE_URL
 from src.usuarios.infraestructura.modelo_usuario import Base
+from src.eventos.infraestructura.modelo_evento import EventoModelo
 
 config = context.config
 

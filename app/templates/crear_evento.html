@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear evento | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/panel.css') }}">
+</head>
+<body>
+    <main class="main">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">ENAGENDA</p>
+                <h1>Crear evento</h1>
+                <p class="subtitle">
+                    Completa los datos de tu celebración.
+                </p>
+            </div>
+            <a href="{{ url_for('panel') }}">Volver a mis eventos</a>
+        </header>
+
+        <section class="event-card">
+            
+            {% if mensaje_error %}
+                <div class="error-message" role="alert">
+                    {{ mensaje_error }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <p>
+                    <label for="titulo">Título del evento</label>
+                    <input id="titulo" name="titulo"
+                           type="text" maxlength="150" required>
+                </p>
+
+                <p>
+                    <label for="descripcion">Descripción (opcional)</label>
+                    <textarea id="descripcion" name="descripcion"
+                              maxlength="2000"></textarea>
+                </p>
+
+                <p>
+                    <label for="ubicacion">Ubicación</label>
+                    <input id="ubicacion" name="ubicacion"
+                           type="text" maxlength="255" required>
+                </p>
+
+                <p>
+                    <label for="fecha_evento">Fecha y hora del evento</label>
+                    <input id="fecha_evento" name="fecha_evento"
+                           type="datetime-local" required>
+                </p>
+
+                <p>
+                    <label for="fecha_limite_confirmacion">
+                        Fecha límite de confirmación
+                    </label>
+                    <input id="fecha_limite_confirmacion"
+                           name="fecha_limite_confirmacion"
+                           type="datetime-local" required>
+                </p>
+
+                <button type="submit" class="create-button">
+                    Guardar evento
+                </button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

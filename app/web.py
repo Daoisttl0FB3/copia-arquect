@@ -35,6 +35,16 @@ from src.usuarios.aplicacion.registrar_usuario import registrar_usuario
 from src.usuarios.aplicacion.autenticar_usuario import autenticar_usuario
 
 
+from src.compartido.infraestructura.base_datos import SessionLocal
+from src.eventos.infraestructura.repositorio_eventos import (
+    RepositorioEventos,
+)
+from src.usuarios.infraestructura.modelo_usuario import UsuarioModelo
+
+from zoneinfo import ZoneInfo
+
+from src.eventos.aplicacion.crear_evento import crear_evento
+
 app = Flask(__name__)
 
 # SECRET_KEY se configura en .env, nunca se publica en Git.
@@ -148,10 +158,102 @@ def login():
     return render_template("login.html", mensaje_error=mensaje_error)
 
 
+
 @app.get("/panel")
 @login_requerido
 def panel():
-    return render_template("panel.html")
+    usuario_id = session["usuario_id"]
+
+    with SessionLocal() as sesion:
+        usuario = sesion.get(UsuarioModelo, usuario_id)
+
+        if usuario is None or not usuario.activo:
+            session.clear()
+            return redirect(url_for("login"))
+
+        repositorio = RepositorioEventos(sesion)
+
+        eventos = repositorio.listar_por_usuario(usuario_id)
+        cantidad_activos = repositorio.contar_activos(usuario_id)
+
+        datos_eventos = [
+            {
+                "id": evento.id,
+                "titulo": evento.titulo,
+                "descripcion": evento.descripcion,
+                "ubicacion": evento.ubicacion,
+                "fecha_evento": evento.fecha_evento,
+                "estado": evento.estado,
+            }
+            for evento in eventos
+        ]
+
+        nombre_usuario = usuario.nombre
+
+    return render_template(
+        "panel.html",
+        nombre_usuario=nombre_usuario,
+        eventos=datos_eventos,
+        cantidad_activos=cantidad_activos,
+        limite_eventos=4,
+    )
+
+
+
+@app.route("/eventos/crear", methods=["GET", "POST"])
+@login_requerido
+def nuevo_evento():
+    mensaje_error = None
+
+    with SessionLocal() as sesion:
+        repositorio = RepositorioEventos(sesion)
+        cantidad_activos = repositorio.contar_activos(
+            session["usuario_id"]
+        )
+
+    if cantidad_activos >= 4:
+        return redirect(url_for("panel"))
+
+    if request.method == "POST":
+        titulo = request.form.get("titulo", "")
+        descripcion = request.form.get("descripcion", "")
+        ubicacion = request.form.get("ubicacion", "")
+
+        fecha_texto = request.form.get("fecha_evento", "")
+        limite_texto = request.form.get(
+            "fecha_limite_confirmacion", ""
+        )
+
+        try:
+            zona = ZoneInfo("America/Bogota")
+
+            fecha_evento = datetime.fromisoformat(
+                fecha_texto
+            ).replace(tzinfo=zona)
+
+            fecha_limite = datetime.fromisoformat(
+                limite_texto
+            ).replace(tzinfo=zona)
+
+            crear_evento(
+                usuario_id=session["usuario_id"],
+                titulo=titulo,
+                descripcion=descripcion,
+                ubicacion=ubicacion,
+                fecha_evento=fecha_evento,
+                fecha_limite_confirmacion=fecha_limite,
+            )
+
+            return redirect(url_for("panel"))
+
+        except ValueError as error:
+            mensaje_error = str(error)
+
+    return render_template(
+        "crear_evento.html",
+        mensaje_error=mensaje_error,
+    )
+
 
 
 @app.post("/logout")
