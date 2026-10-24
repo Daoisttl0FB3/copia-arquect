@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu invitación | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/invitacion_evento.css') }}">
+</head>
+<body>
+    <main class="invitation-page">
+        <article class="invitation-card">
+
+            <header class="invitation-brand">
+                <span class="brand-logo">E</span>
+                <strong>EnAgenda</strong>
+            </header>
+
+            <p class="eyebrow">TIENES UNA INVITACIÓN</p>
+
+            <h1>¡Hola, {{ invitacion.nombre }}! 💜</h1>
+            <p class="intro">
+                Te han invitado a un evento especial.
+            </p>
+
+            <section class="event-information">
+                <h2>{{ invitacion.titulo }}</h2>
+
+                {% if invitacion.descripcion %}
+                    <p>{{ invitacion.descripcion }}</p>
+                {% endif %}
+
+                <div class="info-item">
+                    <span>Fecha y hora</span>
+                    <strong>
+                        {{ invitacion.fecha_evento.strftime('%d/%m/%Y · %I:%M %p') }}
+                    </strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Ubicación</span>
+                    <strong>{{ invitacion.ubicacion }}</strong>
+                </div>
+
+                <div class="info-item">
+                    <span>Responder antes del</span>
+                    <strong>
+                        {{ invitacion.fecha_limite.strftime('%d/%m/%Y · %I:%M %p') }}
+                    </strong>
+                </div>
+            </section>
+
+            {% if mensaje %}
+                <div class="notice success" role="status">
+                    {{ mensaje }}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="notice error" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <section class="rsvp-section">
+                <h2>¿Nos acompañarás?</h2>
+
+                <p class="current-status">
+                    Tu respuesta actual:
+                    <strong>
+                        {% if invitacion.estado == "confirmado" %}
+                            Sí, asistiré
+                        {% elif invitacion.estado == "no_asistire" %}
+                            No asistiré
+                        {% else %}
+                            Pendiente
+                        {% endif %}
+                    </strong>
+                </p>
+
+                {% if vencida %}
+                    <div class="notice">
+                        El plazo de confirmación ha finalizado.
+                        Ya no es posible cambiar tu respuesta.
+                    </div>
+                {% else %}
+                    <form method="POST">
+                        <input type="hidden"
+                               name="csrf_token"
+                               value="{{ csrf_token() }}">
+
+                        <label class="answer-option">
+                            <input type="radio"
+                                   name="estado"
+                                   value="confirmado"
+                                   {% if invitacion.estado == "confirmado" %}checked{% endif %}
+                                   required>
+                            Sí, asistiré
+                        </label>
+
+                        <label class="answer-option">
+                            <input type="radio"
+                                   name="estado"
+                                   value="no_asistire"
+                                   {% if invitacion.estado == "no_asistire" %}checked{% endif %}>
+                            No podré asistir
+                        </label>
+
+                        <button type="submit">
+                            Enviar respuesta
+                        </button>
+                    </form>
+                {% endif %}
+            </section>
+
+            <footer>Invitación gestionada con EnAgenda</footer>
+
+        </article>
+    </main>
+</body>
+</html>

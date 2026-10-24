@@ -116,9 +116,10 @@
                                 </p>
                             </div>
 
-                            <span class="coming-soon">
-                                Administración próximamente
-                            </span>
+                            <a class="event-action"
+                                href="{{ url_for('detalle_evento', evento_id=evento.id) }}">
+                                    Administrar evento →
+                            </a>
 
                         </article>
                     {% endfor %}

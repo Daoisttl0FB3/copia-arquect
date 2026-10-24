@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ evento.titulo }} | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/panel.css') }}">
+</head>
+<body>
+
+<main class="main detail-page">
+
+    <a class="back-link" href="{{ url_for('panel') }}">
+        ← Volver a mis eventos
+    </a>
+
+    <header class="detail-header">
+        <div>
+            <p class="eyebrow">ADMINISTRACIÓN DEL EVENTO</p>
+            <h1>{{ evento.titulo }}</h1>
+            <span class="event-status">
+                {{ evento.estado | replace('_', ' ') | title }}
+            </span>
+        </div>
+    </header>
+
+    <section class="detail-info">
+        <h2>Información del evento</h2>
+
+        {% if evento.descripcion %}
+            <p class="detail-description">
+                {{ evento.descripcion }}
+            </p>
+        {% endif %}
+
+        <div class="info-grid">
+            <div>
+                <span>Fecha del evento</span>
+                <strong>
+                    {{ evento.fecha_evento.strftime('%d/%m/%Y %I:%M %p') }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Ubicación</span>
+                <strong>{{ evento.ubicacion }}</strong>
+            </div>
+
+            <div>
+                <span>Límite de confirmación</span>
+                <strong>
+                    {{ evento.fecha_limite.strftime('%d/%m/%Y %I:%M %p') }}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="modules-section">
+        <h2>Organiza tu evento</h2>
+        <p>Administra cada aspecto de tu celebración.</p>
+
+        <div class="modules-grid">
+
+            <article class="module-card">
+                <div class="module-icon">✉</div>
+                <h3>Invitados</h3>
+                <p>
+                    Añade invitados, comparte invitaciones
+                    y consulta sus respuestas.
+                </p>
+                <a class="event-action"
+                href="{{ url_for('invitados_evento', evento_id=evento.id) }}">
+                    Gestionar invitados →
+                </a>
+            </article>
+
+            <article class="module-card">
+                <div class="module-icon">✓</div>
+                <h3>Tareas</h3>
+                <p>
+                    Organiza los preparativos y controla
+                    las actividades pendientes.
+                </p>
+                <span class="module-pending">Próximamente</span>
+            </article>
+
+            <article class="module-card">
+                <div class="module-icon">▦</div>
+                <h3>Agenda</h3>
+                <p>
+                    Planifica los horarios y las
+                    actividades de tu evento.
+                </p>
+                <span class="module-pending">Próximamente</span>
+            </article>
+
+            <article class="module-card">
+                <div class="module-icon">$</div>
+                <h3>Presupuesto</h3>
+                <p>
+                    Registra gastos y organiza el
+                    dinero destinado a tu celebración.
+                </p>
+                <span class="module-pending">Próximamente</span>
+            </article>
+
+        </div>
+    </section>
+
+</main>
+
+</body>
+</html>

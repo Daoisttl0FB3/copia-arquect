@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitados | EnAgenda</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/panel.css') }}">
+</head>
+<body>
+<main class="main detail-page">
+
+    <a class="back-link"
+       href="{{ url_for('detalle_evento', evento_id=evento_id) }}">
+        ← Volver al evento
+    </a>
+
+    <header class="detail-header">
+        <p class="eyebrow">GESTIÓN DE INVITADOS</p>
+        <h1>{{ titulo_evento }}</h1>
+        <p class="subtitle">
+            {{ invitaciones | length }} de 30 invitados registrados.
+            Quedan {{ espacios_disponibles }} espacios.
+        </p>
+    </header>
+
+    {% if mensaje_error %}
+        <div class="error-message" role="alert">
+            {{ mensaje_error }}
+        </div>
+    {% endif %}
+
+    {% if espacios_disponibles > 0 %}
+    <section class="detail-info">
+        <h2>Agregar invitados</h2>
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <div class="guest-fields">
+                <label for="nombre">Nombre</label>
+                <input id="nombre" name="nombre[]"
+                       maxlength="150" required
+                       placeholder="Nombre del invitado">
+
+                <label for="correo">Correo electrónico</label>
+                <input id="correo" name="correo[]"
+                       type="email" maxlength="255" required
+                       placeholder="correo@ejemplo.com">
+            </div>
+
+            <button class="guest-submit" type="submit">
+                Agregar invitado
+            </button>
+        </form>
+    </section>
+    {% endif %}
+
+    <section class="modules-section">
+        <h2>Lista de invitados</h2>
+
+        {% if invitaciones %}
+            <div class="guest-list">
+                {% for invitacion in invitaciones %}
+                <article class="guest-row">
+                    <div>
+                        <strong>{{ invitacion.nombre }}</strong>
+                        <p>{{ invitacion.correo }}</p>
+                        <div class="guest-link">
+                            <label>Enlace personal de invitación</label>
+
+                            <input
+                                type="text"
+                                readonly
+                                aria-label="Enlace de invitación de {{ invitacion.nombre }}"
+                                value="{{ url_for('ver_invitacion_evento', token=invitacion.token, _external=True) }}"
+                                onclick="this.select()"
+                            >
+
+                            <a class="event-action"
+                            href="{{ url_for('ver_invitacion_evento', token=invitacion.token) }}"
+                            target="_blank"
+                            rel="noopener noreferrer">
+                                Ver como invitado ↗
+                            </a>
+                        </div>
+                    </div>
+                    <span class="event-status">
+                        {{ invitacion.estado | replace('_', ' ') | title }}
+                    </span>
+                </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>Todavía no hay invitados</h3>
+                <p>Agrega el primero para comenzar.</p>
+            </div>
+        {% endif %}
+    </section>
+
+</main>
+</body>
+</html>

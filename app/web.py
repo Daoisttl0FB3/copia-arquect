@@ -30,20 +30,25 @@ from src.invitaciones.dominio.invitaciones import EstadoInvitacion
 from src.invitaciones.infraestructura.repositorio_memoria import (
     RepositorioInvitacionesMemoria,
 )
-
 from src.usuarios.aplicacion.registrar_usuario import registrar_usuario
 from src.usuarios.aplicacion.autenticar_usuario import autenticar_usuario
-
-
+from src.invitaciones.aplicacion.agregar_invitados import agregar_invitados
+from src.invitaciones.infraestructura.repositorio_invitaciones_postgres import (
+    RepositorioInvitacionesPostgres,
+)
 from src.compartido.infraestructura.base_datos import SessionLocal
 from src.eventos.infraestructura.repositorio_eventos import (
     RepositorioEventos,
 )
 from src.usuarios.infraestructura.modelo_usuario import UsuarioModelo
+from src.eventos.aplicacion.crear_evento import crear_evento
+from src.invitaciones.infraestructura.modelo_invitacion import InvitacionModelo
+from src.eventos.infraestructura.modelo_evento import EventoModelo
 
 from zoneinfo import ZoneInfo
-
-from src.eventos.aplicacion.crear_evento import crear_evento
+from flask import abort
+from datetime import datetime, timezone
+from sqlalchemy import select
 
 app = Flask(__name__)
 
@@ -254,6 +259,163 @@ def nuevo_evento():
         mensaje_error=mensaje_error,
     )
 
+
+@app.get("/eventos/<int:evento_id>")
+@login_requerido
+def detalle_evento(evento_id):
+    usuario_id = session["usuario_id"]
+    zona = ZoneInfo("America/Bogota")
+
+    with SessionLocal() as sesion:
+        repositorio = RepositorioEventos(sesion)
+        evento = repositorio.buscar_por_id(evento_id, usuario_id)
+
+        if evento is None:
+            abort(404)
+
+        datos_evento = {
+            "id": evento.id,
+            "titulo": evento.titulo,
+            "descripcion": evento.descripcion,
+            "ubicacion": evento.ubicacion,
+            "estado": evento.estado,
+            "fecha_evento": evento.fecha_evento.astimezone(zona),
+            "fecha_limite": (
+                evento.fecha_limite_confirmacion.astimezone(zona)
+            ),
+        }
+
+    return render_template(
+        "detalle_evento.html",
+        evento=datos_evento,
+    )
+
+
+@app.route("/eventos/<int:evento_id>/invitados", methods=["GET", "POST"])
+@login_requerido
+def invitados_evento(evento_id):
+    usuario_id = session["usuario_id"]
+    mensaje_error = None
+
+    with SessionLocal() as sesion:
+        evento = RepositorioEventos(sesion).buscar_por_id(
+            evento_id, usuario_id
+        )
+        if evento is None:
+            abort(404)
+
+        titulo_evento = evento.titulo
+
+    if request.method == "POST":
+        nombres = request.form.getlist("nombre[]")
+        correos = request.form.getlist("correo[]")
+
+        try:
+            if len(nombres) != len(correos):
+                raise ValueError("Los datos de los invitados están incompletos.")
+
+            invitados_nuevos = [
+                {"nombre": nombre, "correo": correo}
+                for nombre, correo in zip(nombres, correos)
+            ]
+
+            agregar_invitados(
+                evento_id=evento_id,
+                usuario_id=usuario_id,
+                invitados=invitados_nuevos,
+            )
+
+            return redirect(url_for("invitados_evento", evento_id=evento_id))
+
+        except ValueError as error:
+            mensaje_error = str(error)
+
+    with SessionLocal() as sesion:
+        repositorio = RepositorioInvitacionesPostgres(sesion)
+        invitaciones = [
+            {
+                "nombre": invitacion.nombre,
+                "correo": invitacion.correo,
+                "estado": invitacion.estado,
+                "token": invitacion.token,
+            }
+            for invitacion in repositorio.listar_por_evento(evento_id)
+        ]
+
+    return render_template(
+        "invitados_evento.html",
+        evento_id=evento_id,
+        titulo_evento=titulo_evento,
+        invitaciones=invitaciones,
+        espacios_disponibles=30 - len(invitaciones),
+        mensaje_error=mensaje_error,
+    )
+
+
+@app.route("/eventos/invitacion/<token>", methods=["GET", "POST"])
+def ver_invitacion_evento(token):
+    mensaje = None
+    error = None
+
+    with SessionLocal() as sesion:
+        invitacion = sesion.scalar(
+            select(InvitacionModelo).where(
+                InvitacionModelo.token == token
+            )
+        )
+
+        if invitacion is None:
+            abort(404)
+
+        evento = sesion.get(EventoModelo, invitacion.evento_id)
+
+        if evento is None:
+            abort(404)
+
+        ahora = datetime.now(timezone.utc)
+
+        vencida = (
+            ahora > evento.fecha_limite_confirmacion
+            or evento.estado in ("finalizado", "cancelado")
+        )
+
+        if request.method == "POST":
+            nuevo_estado = request.form.get("estado")
+
+            if vencida:
+                error = "El plazo para responder ha finalizado."
+
+            elif nuevo_estado not in ("confirmado", "no_asistire"):
+                error = "Selecciona una respuesta válida."
+
+            else:
+                invitacion.estado = nuevo_estado
+                sesion.commit()
+                mensaje = "Tu respuesta se registró correctamente."
+
+        datos = {
+            "nombre": invitacion.nombre,
+            "estado": invitacion.estado,
+            "titulo": evento.titulo,
+            "descripcion": evento.descripcion,
+            "ubicacion": evento.ubicacion,
+            "fecha_evento": evento.fecha_evento.astimezone(
+                ZoneInfo("America/Bogota")
+            ),
+            "fecha_limite": (
+                evento.fecha_limite_confirmacion.astimezone(
+                    ZoneInfo("America/Bogota")
+                )
+            ),
+        }
+
+    return render_template(
+        "invitacion_evento.html",
+        invitacion=datos,
+        vencida=vencida,
+        mensaje=mensaje,
+        error=error,
+    )
 
 
 @app.post("/logout")

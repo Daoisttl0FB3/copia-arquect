@@ -426,3 +426,244 @@ body {
     border-radius: 10px;
     font-size: 14px;
 }
+.event-action {
+    display: inline-flex;
+    margin-top: 16px;
+    padding: 11px 15px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.event-action:hover {
+    background: #ded5f5;
+}
+
+/* Administración individual de eventos */
+
+.detail-page {
+    width: 100%;
+    max-width: 1100px;
+    padding: 32px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 24px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detail-header {
+    margin-bottom: 24px;
+}
+
+.detail-header h1 {
+    font-size: clamp(25px, 3vw, 36px);
+    margin: 8px 0 18px;
+}
+
+.detail-info {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.detail-info h2,
+.modules-section h2 {
+    font-size: 20px;
+    margin: 0 0 14px;
+}
+
+.detail-description,
+.modules-section > p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.info-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.info-grid span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.info-grid strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.modules-section {
+    margin-top: 30px;
+}
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.module-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.module-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 12px;
+    font-size: 22px;
+}
+
+.module-card h3 {
+    margin: 16px 0 8px;
+}
+
+.module-card p {
+    min-height: 42px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.module-pending {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+@media (max-width: 700px) {
+    .detail-page {
+        padding: 20px 16px;
+    }
+
+    .info-grid,
+    .modules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .module-card p {
+        min-height: 0;
+    }
+}
+
+/* Gestión de invitados */
+
+.guest-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.guest-fields label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.guest-fields input {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font: inherit;
+    background: white;
+}
+
+.guest-fields input:focus {
+    outline: 2px solid var(--accent-light);
+    border-color: var(--accent);
+}
+
+.guest-submit {
+    margin-top: 20px;
+    padding: 13px 22px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.guest-submit:hover {
+    background: #5c40ac;
+}
+
+.guest-list {
+    display: grid;
+    gap: 12px;
+}
+
+.guest-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+}
+
+.guest-row p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+    .guest-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+.guest-link {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.guest-link label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.guest-link input {
+    width: 100%;
+    max-width: 350px;
+    padding: 9px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+}
