@@ -1,18 +1,5 @@
-Entorno aislado del asistente; Python 3.12.12. No es CI de GitHub.
-Comando: python -m unittest experimentos.mensajes_consistencia.test_simulador -v
-test_backoff_y_agotamiento (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_backoff_y_agotamiento) ... ok
-test_campo_obligatorio_ausente (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_campo_obligatorio_ausente) ... ok
-test_campo_opcional_es_compatible (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_campo_opcional_es_compatible) ... ok
-test_duplicado_tiene_un_solo_efecto (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_duplicado_tiene_un_solo_efecto) ... ok
-test_estado_invalido (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_estado_invalido) ... ok
-test_fallo_recuperable (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_fallo_recuperable) ... ok
-test_respuesta_nueva_sustituye_anterior (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_respuesta_nueva_sustituye_anterior) ... ok
-test_seguimiento_identificador (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_seguimiento_identificador) ... ok
-test_tipo_de_identificador_invalido (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_tipo_de_identificador_invalido) ... ok
-test_version_antigua_no_revierte_estado (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_version_antigua_no_revierte_estado) ... ok
-test_version_no_soportada_no_se_reintenta (experimentos.mensajes_consistencia.test_simulador.PruebasMensajes.test_version_no_soportada_no_se_reintenta) ... ok
-
-----------------------------------------------------------------------
-Ran 11 tests in 0.001s
-
-OK
+Entorno aislado del asistente: Python 3.12.8.
+Se ejecuto la version inicial del reemplazo: 11 pruebas, OK.
+La version final compactada debe verificarse en Actions.
+No es resultado de GitHub CI ni de la suite completa de EnAgenda.
+Comando reproducible: python -m unittest experimentos.mensajes_consistencia.test_simulador -v

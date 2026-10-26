@@ -1,96 +1,84 @@
-# Taller aplicado: Mensajes y consistencia
+# Taller: envio automatico de invitaciones
 
-Prototipo aislado del MVP de EnAgenda. No cambia Flask, PostgreSQL ni Dokploy.
-La propuesta simula Invitaciones -> cola -> proyeccion de asistencia para Panel.
-No contiene datos personales, tokens de invitacion ni credenciales.
+Reemplaza el resumen de Panel. Necesidad confirmada: enviar automaticamente los
+enlaces desde EnAgenda. Prototipo aislado, sin envio real, Flask, BD ni Dokploy.
+Correo simulado es un canal experimental, no un proveedor productivo elegido.
 
-## Ejecutar desde la raiz
+## Ejecutar
 
 ```bash
 python -m unittest experimentos.mensajes_consistencia.test_simulador -v
 python -m experimentos.mensajes_consistencia.demo
 ```
 
-Solo requiere biblioteca estandar de Python. Las pruebas estan junto al prototipo
-para ejecutarlas sin cargar tests/conftest.py ni las dependencias de Flask/BD.
-El workflow independiente taller-mensajes.yml prueba Python 3.13 y guarda logs
-como artefactos; no implica que el CI general o el despliegue esten verificados.
-
-## Artefactos navegables
-
-- [Simulador](../../../experimentos/mensajes_consistencia/simulador.py)
-- [Demo](../../../experimentos/mensajes_consistencia/demo.py)
-- [Pruebas](../../../experimentos/mensajes_consistencia/test_simulador.py)
-- [ADR propuesto](../../adr/0004-evaluar-mensajeria-en-prototipo-aislado.md)
-- [Salida real de la demo](resultados/demo.jsonl)
-- [Salida real de pruebas](resultados/pruebas.txt)
-- [Workflow](../../../.github/workflows/taller-mensajes.yml)
+Solo biblioteca estandar. Pruebas junto al prototipo para no cargar conftest.py
+de Flask/BD. El workflow taller-mensajes.yml ejecuta ambos comandos en Python
+3.13 y guarda artefactos. Revisar su resultado; no se afirma CI verde.
 
 ## Contrato v1
 
 ```json
-{"message_id":"msg-001","event_type":"AsistenciaRespondida","schema_version":1,"occurred_at":"2026-10-26T02:00:00Z","data":{"evento_id":10,"invitacion_id":101,"estado":"confirmado","version_respuesta":1}}
+{"message_id":"msg-001","message_type":"EnviarInvitacion","schema_version":1,"data":{"envio_id":"envio-101","invitacion_id":101,"canal":"correo_simulado","destinatario":"invitado@example.invalid","enlace":"https://enagenda.example.invalid/invitacion/DEMO"}}
 ```
 
-Todos los campos mostrados son obligatorios. message_id es una cadena no vacia
-que identifica un evento inmutable y se conserva durante reentregas. Los IDs y
-version_respuesta son enteros positivos. occurred_at incluye zona horaria.
-Estados permitidos: pendiente, confirmado, no_asistire.
-La fecha de ejemplo es sintetica; no representa la fecha real de una operacion.
+Todos los campos mostrados son obligatorios. IDs de mensaje/envio, destinatario
+y enlace: cadenas no vacias. invitacion_id: entero positivo. Solo el tipo, canal
+y version mostrados. No valida entregabilidad ni existencia del enlace. Datos
+ficticios, sin credenciales. Campos opcionales adicionales son compatibles;
+retirar campos o cambiar tipos/significado requiere nueva version mayor.
+Version desconocida o contrato invalido va a fallidos sin reintentos.
 
-Compatibilidad: v1 admite campos opcionales adicionales. Eliminar campos,
-cambiar tipos o significados requiere nueva version mayor. El consumidor solo
-acepta v1. Contratos invalidos y versiones desconocidas van a fallidos sin
-reintentar. Una version_respuesta mayor sustituye el estado anterior por
-invitacion; versiones iguales o anteriores se ignoran. El productor debe emitir
-una nueva version cuando cambia la respuesta y no reutilizar message_id.
+message_id identifica un mensaje inmutable; envio_id, la solicitud logica.
+Conservar ambos en reintentos y envio_id en republicaciones del mismo trabajo.
+Un reenvio intencional requiere otro envio_id. No reutilizar claves con payload
+diferente. Se deduplica por ambas claves despues de la aceptacion; el proveedor
+simulado tambien es idempotente por envio_id. Aceptado no significa recibido.
 
-## Entrega, consistencia y fallos
+## Entrega, reintentos y seguimiento
 
-Se simula entrega al menos una vez dentro del proceso: los reintentos conservan
-message_id. No se promete entrega durable ante reinicios. La proyeccion puede
-estar desactualizada mientras hay mensajes pendientes; si todos los cambios
-validos llegan y se aplican, converge al ultimo estado recibido por version.
-Mensajes en fallidos requieren revision; no hay convergencia garantizada si se
-abandona un cambio sin procesar.
+Entrega al menos una vez simulada dentro del proceso vivo, sin durabilidad.
+Tres intentos totales, backoff 1 y 2 segundos, con reloj virtual. Fallos temporales
+inyectados antes de aceptar. Tercer fallo: conservar original, intentos y motivo
+en fallidos. No hay reintentos infinitos. Encolar no equivale a enviar: puede
+haber trabajos pendientes o fallidos despues de registrar la solicitud.
+Logs JSONL: message_id, envio_id, attempt, virtual_time_seconds; eventos desde
+message_produced, message_delivered y provider_attempt hasta send_accepted,
+retry_scheduled, duplicate_ignored o message_dead_lettered. Sin correo/enlace
+en los logs. Los fallidos contienen payload ficticio; en produccion requieren
+proteccion y politica de retencion.
 
-Deduplicacion mediante conjunto de message_id procesados, actualizado despues
-del efecto. El resumen cuenta invitaciones, no mensajes. Reintentos: tres
-intentos totales, demoras de 1 y 2 segundos; el tercer fallo envia el original,
-intentos y motivo a una cola de fallidos. Sin reintentos infinitos. Backoff con
-reloj virtual, no esperas reales. Fallos temporales inyectados antes del efecto.
+## Artefactos y evidencia
 
-Los logs JSONL enlazan message_produced, message_delivered, retry_scheduled,
-message_processed, duplicate_ignored, stale_ignored y message_dead_lettered por
-message_id, con attempt y virtual_time_seconds. La demo resume contadores.
+- [Codigo](../../../experimentos/mensajes_consistencia/simulador.py)
+- [Demo](../../../experimentos/mensajes_consistencia/demo.py)
+- [Pruebas](../../../experimentos/mensajes_consistencia/test_simulador.py)
+- [Ejecucion de pruebas](resultados/pruebas.txt)
+- [Logs de demo](resultados/demo.jsonl)
+- [ADR propuesto](../../adr/0004-evaluar-mensajeria-en-prototipo-aislado.md)
+- [Workflow](../../../.github/workflows/taller-mensajes.yml)
 
-## Evidencia ejecutada y pendiente
-
-El asistente ejecuto el prototipo en un entorno Python aislado, no sobre el
-repositorio completo: 11 pruebas exitosas. La demo obtuvo 2 confirmados, 1
-duplicado ignorado, 3 reintentos y 1 mensaje fallido. Las salidas reales estan en
-resultados/. La version de Python utilizada figura en pruebas.txt.
-No se ejecuto la suite completa, no se verifico Dokploy ni un run de Actions.
-Tras subir, el equipo debe revisar el workflow y enlazar su run y el commit de
-entrega. No se afirma que esas verificaciones ya hayan ocurrido.
+Se reemplaza la evidencia de Panel. El asistente verifico la version inicial
+del reemplazo con 11 pruebas exitosas en Python 3.12.8 y demo: 2 aceptaciones
+simuladas, 1 duplicado, 3 reintentos y 1 fallido. Las salidas versionadas abajo
+son un resumen de esa ejecucion previa; tras subir, CI debe producir la salida
+detallada de la version final. No se verificaron suite completa, Actions ni
+Dokploy. Enlazar commit final y run real antes de entregar.
 
 ## Limites
 
-Cola, deduplicacion, proyeccion y fallidos en memoria, perdidos al reiniciar.
-Un solo consumidor, sin concurrencia ni pruebas de carga. Sin broker real,
-outbox, atomicidad con PostgreSQL ni recuperacion ante caida entre efecto y
-registro de deduplicacion. No evalua particiones de red, disco o indisponibilidad
-real. No implementa reproceso operativo de fallidos. Los IDs del evento y de la
-invitacion deben ser estables en una integracion futura. No incorpora el patron
-al sistema desplegado. La no incorporacion es una propuesta pendiente del equipo.
+Memoria, un consumidor, sin red ni proveedor real. Sin concurrencia, persistencia,
+outbox o atomicidad BD/publicacion. No prueba caida despues de aceptacion remota
+y antes del registro local: un proveedor real sin idempotencia podria duplicar
+el envio tras timeout. No promete exactamente una vez ni entrega al invitado.
+Sin reproceso operativo de fallidos ni pruebas de carga. No se integra al MVP:
+se pospone hasta definir proveedor, seguridad y estrategia durable, no porque
+el envio carezca de necesidad.
 
-## Registro del apoyo de IA
+## Apoyo de IA
 
-Fecha: 2026-10-25. Herramienta: Perplexity. Se genero el simulador, demo, pruebas,
-workflow y documentacion como propuesta. Se corrigio el diseno inicial para
-sustituir estados por version y no contar respuestas sucesivas como personas
-nuevas. Se descarto incorporar un broker o modificar el MVP sin necesidad
-medida, para limitar complejidad y riesgo. Se verificaron las 11 pruebas y la
-demo en entorno aislado. Aceptacion final, CI y aprobacion del ADR: pendientes
-del equipo. Este registro complementa docs/ia.md sin atribuirle una aprobacion
-que todavia no existe.
+2026-10-25, Perplexity. El usuario confirmo envio automatico y solicito sustituir
+el prototipo de Panel. Se propuso EnviarInvitacion con proveedor simulado,
+deduplicacion, reintentos y pruebas. Se corrige la justificacion: si hay necesidad
+de envio; falta integracion productiva. Se descartan envios reales y credenciales
+en el taller. Revision del equipo, CI final y aprobacion del ADR pendientes.
+Este registro complementa docs/ia.md sin atribuir aprobaciones inexistentes.
