@@ -1,0 +1,35 @@
+name: Taller mensajes y consistencia
+on:
+  push:
+    branches: [main, master, feat/taller-mensajes-consistencia]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  experimento:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Ejecutar pruebas aisladas
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p evidencia-taller
+          python --version > evidencia-taller/pruebas.txt
+          python -m unittest experimentos.mensajes_consistencia.test_simulador -v 2>&1 | tee -a evidencia-taller/pruebas.txt
+      - name: Ejecutar demo
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m experimentos.mensajes_consistencia.demo | tee evidencia-taller/demo.jsonl
+      - name: Conservar evidencia real
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-mensajes-${{ github.sha }}
+          path: evidencia-taller/

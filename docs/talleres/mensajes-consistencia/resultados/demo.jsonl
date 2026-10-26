@@ -1,0 +1,19 @@
+{"event": "message_produced", "message_id": "msg-normal", "attempt": 0, "virtual_time_seconds": 0}
+{"event": "message_produced", "message_id": "msg-normal", "attempt": 0, "virtual_time_seconds": 0}
+{"event": "message_produced", "message_id": "msg-recuperable", "attempt": 0, "virtual_time_seconds": 0}
+{"event": "message_produced", "message_id": "msg-agotado", "attempt": 0, "virtual_time_seconds": 0}
+{"event": "message_delivered", "message_id": "msg-normal", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "message_processed", "message_id": "msg-normal", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "message_delivered", "message_id": "msg-normal", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "duplicate_ignored", "message_id": "msg-normal", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "message_delivered", "message_id": "msg-recuperable", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "retry_scheduled", "message_id": "msg-recuperable", "attempt": 1, "virtual_time_seconds": 0, "delay_seconds": 1}
+{"event": "message_delivered", "message_id": "msg-agotado", "attempt": 1, "virtual_time_seconds": 0}
+{"event": "retry_scheduled", "message_id": "msg-agotado", "attempt": 1, "virtual_time_seconds": 0, "delay_seconds": 1}
+{"event": "message_delivered", "message_id": "msg-recuperable", "attempt": 2, "virtual_time_seconds": 1}
+{"event": "message_processed", "message_id": "msg-recuperable", "attempt": 2, "virtual_time_seconds": 1}
+{"event": "message_delivered", "message_id": "msg-agotado", "attempt": 2, "virtual_time_seconds": 1}
+{"event": "retry_scheduled", "message_id": "msg-agotado", "attempt": 2, "virtual_time_seconds": 1, "delay_seconds": 2}
+{"event": "message_delivered", "message_id": "msg-agotado", "attempt": 3, "virtual_time_seconds": 3}
+{"event": "message_dead_lettered", "message_id": "msg-agotado", "attempt": 3, "virtual_time_seconds": 3, "reason": "Fallo temporal: intentos agotados"}
+{"event": "experiment_summary", "resumen": {"total": 2, "pendientes": 0, "confirmados": 2, "no_asistiran": 0}, "duplicates": 1, "retries": 3, "dead_letters": 1}
