@@ -1,0 +1,1 @@
+{"source":"resumen de ejecucion aislada previa del reemplazo; CI debe regenerar logs detallados","python":"3.12.8","event":"experiment_summary","accepted_sends":2,"duplicates":1,"retries":3,"dead_letters":1}

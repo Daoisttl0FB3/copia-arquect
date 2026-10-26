@@ -1,0 +1,5 @@
+Entorno aislado del asistente: Python 3.12.8.
+Se ejecuto la version inicial del reemplazo: 11 pruebas, OK.
+La version final compactada debe verificarse en Actions.
+No es resultado de GitHub CI ni de la suite completa de EnAgenda.
+Comando reproducible: python -m unittest experimentos.mensajes_consistencia.test_simulador -v
